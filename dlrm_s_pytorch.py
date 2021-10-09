@@ -365,9 +365,7 @@ class DLRM_Net(nn.Module):
                 ]
                 self.n_local_emb = len(embedding_rank[ext_dist.my_local_rank])
                 self.n_emb_per_rank = [len(embedding_rank[i]) for i in range(len(embedding_rank))]
-                print(self.n_local_emb, self.n_emb_per_rank)
                 self.local_emb_indices = embedding_rank[ext_dist.my_local_rank]
-                print(self.local_emb_indices)
 
             # create operators
             if ndevices <= 1:
