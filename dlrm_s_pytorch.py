@@ -346,12 +346,28 @@ class DLRM_Net(nn.Module):
                         "only (%d) sparse features for (%d) devices, table partitions will fail"
                         % (n_emb, ext_dist.my_size)
                     )
+                # self.n_global_emb = n_emb
+                # self.n_local_emb, self.n_emb_per_rank = ext_dist.get_split_lengths(
+                #     n_emb
+                # )
+                # self.local_emb_slice = ext_dist.get_my_slice(n_emb)
+                # self.local_emb_indices = list(range(n_emb))[self.local_emb_slice]
                 self.n_global_emb = n_emb
-                self.n_local_emb, self.n_emb_per_rank = ext_dist.get_split_lengths(
-                    n_emb
-                )
-                self.local_emb_slice = ext_dist.get_my_slice(n_emb)
-                self.local_emb_indices = list(range(n_emb))[self.local_emb_slice]
+                embedding_rank = [
+                    [0, 1, 2, 3],
+                    [4, 5, 6, 7],
+                    [8, 9, 10],
+                    [11, 12, 13],
+                    [14, 15, 16],
+                    [17, 18, 19],
+                    [20, 22, 23, 24],
+                    [21, 25]
+                ]
+                self.n_local_emb = len(embedding_rank[ext_dist.my_local_rank])
+                self.n_emb_per_rank = [len(embedding_rank[i]) for i in range(len(embedding_rank))]
+                print(self.n_local_emb, self.n_emb_per_rank)
+                self.local_emb_indices = embedding_rank[ext_dist.my_local_rank]
+                print(self.local_emb_indices)
 
             # create operators
             if ndevices <= 1:
@@ -531,8 +547,10 @@ class DLRM_Net(nn.Module):
             )
 
         dense_x = dense_x[ext_dist.get_my_slice(batch_size)]
-        lS_o = lS_o[self.local_emb_slice]
-        lS_i = lS_i[self.local_emb_slice]
+        # lS_o = lS_o[self.local_emb_slice]
+        # lS_i = lS_i[self.local_emb_slice]
+        lS_o = [lS_o[i] for i in self.local_emb_indices]
+        lS_i = [lS_i[i] for i in self.local_emb_indices]
 
         if (len(self.emb_l) != len(lS_o)) or (len(self.emb_l) != len(lS_i)):
             sys.exit(

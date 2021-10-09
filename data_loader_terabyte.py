@@ -211,7 +211,7 @@ class CriteoBinDataset(Dataset):
         self.bytes_per_entry = (bytes_per_feature * self.tot_fea * batch_size)
 
         self.num_entries = math.ceil(os.path.getsize(data_file) / self.bytes_per_entry)
-
+        
         print('data file:', data_file, 'number of batches:', self.num_entries)
         self.file = open(data_file, 'rb')
 
